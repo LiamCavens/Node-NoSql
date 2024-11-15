@@ -4,15 +4,15 @@ export const authenticate = (
   req: Request,
   res: Response,
   next: NextFunction
-) => {
-  const userId = req.headers["x-user-id"] as string;
+): void => {
+  const userId = req.header("x-user-id");
 
   if (!userId) {
-    return res.status(401).json({
-      data: null,
-      error: { message: "User is not authorized" },
-    });
+    // If `userId` is missing, respond with a 401 status and terminate the request.
+    res.status(401).json({ message: "Unauthorized: User ID is missing" });
+    return;
   }
 
-  next();
+  req.userId = userId; // Attach the user ID to the request
+  next(); // Call next() to proceed to the next middleware or route handler
 };

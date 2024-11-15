@@ -25,5 +25,5 @@ export const createOrder = async (
 
 export const getOrdersByUserId = async (userId: string): Promise<IOrder[]> => {
   // Query the database for orders by user ID
-  return await Order.find({ userId }).exec();
+  return await Order.find({ userId }).sort({ createdAt: -1 }).exec();
 };
