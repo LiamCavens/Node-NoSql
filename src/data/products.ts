@@ -2,7 +2,6 @@ import mongoose from "mongoose";
 import { v4 as uuidv4 } from "uuid";
 import dotenv from "dotenv";
 import {
-  addProducts,
   deleteAllProducts,
 } from "../repositories/product.repository";
 import Product from "../schemas/product.entity";

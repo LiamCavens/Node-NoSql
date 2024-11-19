@@ -1,4 +1,5 @@
 import { Request, Response } from "express";
+import Cart, { ICart } from "../schemas/cart.entity";
 import {
   getOrCreateCart,
   updateCart,
@@ -9,31 +10,29 @@ import { createOrderFromCart } from "../services/order.service";
 
 export const getCart = async (req: Request, res: Response): Promise<void> => {
   try {
-    const userId = req.userId as string; // Assumes `authenticate` middleware sets `userId`
+    const userId = req.userId as string;
 
     let user = await getUserById(userId);
+
     if (!user) {
       user = await createUser(userId);
     }
 
-    console.log('Liam:user');
-    console.log(user);
-
     const cart = await getOrCreateCart(user.id);
 
-    console.log('Liam:cart');
-    console.log(cart);
+    // Calculate the total price
+    const total = cart.items.reduce((acc, item) => {
+      if ("price" in item.product) {
+        return acc + item.product.price * item.count;
+      }
+      return acc;
+    }, 0);
 
-    const total = cart.items.reduce(
-      (acc: number, item: { product: { price: number }; count: number }) =>
-        acc + item.product.price * item.count,
-      0
-    );
-
+    // Send the response
     res.status(200).json({
       data: {
         cart: {
-          id: cart.id,
+          id: cart._id,
           items: cart.items,
         },
         total,
@@ -61,9 +60,6 @@ export const putCart = async (req: Request, res: Response): Promise<void> => {
       return;
     }
 
-    console.log('Liam:productId');
-    console.log(productId);
-
     if (!productId || typeof count !== "number") {
       res.status(400).json({
         data: null,
@@ -74,16 +70,13 @@ export const putCart = async (req: Request, res: Response): Promise<void> => {
 
     const updatedCart = await updateCart(userId, productId, count);
 
-    console.log('Liam:updatedCart');
-    console.log(updatedCart);
-
-    const total = updatedCart.items.reduce(
-      (acc, item) => acc + item.product.price * item.count,
-      0
-    );
-
-    console.log('Liam:total');
-    console.log(total);
+    const total = updatedCart?.items.reduce((acc, item) => {
+      // Use a type guard to check if `product` is populated
+      if ("price" in item.product) {
+        return acc + item.product.price * item.count;
+      }
+      return acc;
+    }, 0);
 
     res.status(200).json({
       data: { cart: updatedCart, total },

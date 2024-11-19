@@ -1,17 +1,22 @@
-import mongoose from "mongoose";
 import { ICart } from "../schemas/cart.entity";
 import {
-  createCart,
   getCartByUserId,
+  createCart,
   saveCart,
 } from "../repositories/cart.repository";
 import { getProductById } from "../repositories/product.repository";
 
 export const getOrCreateCart = async (userId: string): Promise<ICart> => {
+  // Try to find a cart and populate products
   let cart = await getCartByUserId(userId);
+
+  // If no cart exists, create one
   if (!cart) {
     cart = await createCart(userId);
   }
+
+  // Always populate the product details
+  await cart.populate("items.product");
   return cart;
 };
 
@@ -19,36 +24,29 @@ export const updateCart = async (
   userId: string,
   productId: string,
   count: number
-): Promise<ICart> => {
-  const cart = await getOrCreateCart(userId);
-
-  const productObjectId = new mongoose.Types.ObjectId(productId);
-  // Fetch the product from the database
-  const product = await getProductById(productObjectId);
+): Promise<ICart | null> => {
+  const cart = await getOrCreateCart(userId); // Cart is now populated
+  const product = await getProductById(productId);
 
   if (!product) {
-    // If the product is not found, throw an error
     throw new Error(`Product with ID ${productId} not found.`);
   }
 
-  // Find the index of the product in the cart
   const itemIndex = cart.items.findIndex(
-    (item) => item.product.toString() === productObjectId.toString()
+    (item) => item.product._id.toString() === productId // Safe to access _id
   );
 
   if (itemIndex >= 0) {
     if (count === 0) {
-      // Remove the product from the cart if count is 0
-      cart.items.splice(itemIndex, 1);
+      cart.items.splice(itemIndex, 1); // Remove product from cart
     } else {
-      // Update the count of the existing product
-      cart.items[itemIndex].count = count;
+      cart.items[itemIndex].count = count; // Update product count
     }
   } else if (count > 0) {
     cart.items.push({
-      product: product._id,
+      product, // Push the full product
       count,
-    } as any);
+    } as any); // Use `as any` if needed to bypass strict Mongoose validation
   }
 
   return await saveCart(cart);

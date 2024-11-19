@@ -6,7 +6,7 @@ export const getAllProducts = async (): Promise<IProduct[]> => {
 };
 
 export const getProductById = async (
-  id: string | mongoose.Types.ObjectId
+  id: string
 ): Promise<IProduct | null> => {
   return await Product.findById(id);
 };
