@@ -5,6 +5,7 @@ import {
   clearCart,
 } from "../services/cart.service";
 import { getUserById, createUser } from "../repositories/user.repository";
+import { createOrderFromCart } from "../services/order.service";
 
 export const getCart = async (req: Request, res: Response): Promise<void> => {
   try {
@@ -15,7 +16,13 @@ export const getCart = async (req: Request, res: Response): Promise<void> => {
       user = await createUser(userId);
     }
 
+    console.log('Liam:user');
+    console.log(user);
+
     const cart = await getOrCreateCart(user.id);
+
+    console.log('Liam:cart');
+    console.log(cart);
 
     const total = cart.items.reduce(
       (acc: number, item: { product: { price: number }; count: number }) =>
@@ -43,31 +50,61 @@ export const getCart = async (req: Request, res: Response): Promise<void> => {
 
 export const putCart = async (req: Request, res: Response): Promise<void> => {
   try {
-    const userId = req.userId as string;
+    const userId = req.headers["x-user-id"] as string;
     const { productId, count } = req.body;
 
-    const cart = await updateCart(userId, productId, count);
-    if (!cart) {
-      res
-        .status(400)
-        .json({ data: null, error: { message: "Products are not valid" } });
+    if (!userId) {
+      res.status(401).json({
+        data: null,
+        error: { message: "Unauthorized: User ID is missing" },
+      });
       return;
     }
 
-    const total = cart.items.reduce(
-      (acc: number, item: { product: { price: number }; count: number }) =>
-        acc + item.product.price * item.count,
+    console.log('Liam:productId');
+    console.log(productId);
+
+    if (!productId || typeof count !== "number") {
+      res.status(400).json({
+        data: null,
+        error: { message: "Invalid product ID or count" },
+      });
+      return;
+    }
+
+    const updatedCart = await updateCart(userId, productId, count);
+
+    console.log('Liam:updatedCart');
+    console.log(updatedCart);
+
+    const total = updatedCart.items.reduce(
+      (acc, item) => acc + item.product.price * item.count,
       0
     );
 
+    console.log('Liam:total');
+    console.log(total);
+
     res.status(200).json({
-      data: { cart, total },
+      data: { cart: updatedCart, total },
       error: null,
     });
-  } catch (error) {
+  } catch (error: any) {
+    console.error("Error updating cart:", error.message);
+
+    if (error.message.includes("Product with ID")) {
+      // Return 404 for product not found
+      res.status(404).json({
+        data: null,
+        error: { message: error.message },
+      });
+      return;
+    }
+
+    // Return 500 for other errors
     res.status(500).json({
       data: null,
-      error: { message: "Internal Server error" },
+      error: { message: "Internal Server Error" },
     });
   }
 };
@@ -106,6 +143,60 @@ export const clearCartController = async (
     res.status(500).json({
       data: null,
       error: { message: "Internal Server error" },
+    });
+  }
+};
+
+export const checkoutCart = async (
+  req: Request,
+  res: Response
+): Promise<void> => {
+  try {
+    const userId = req.userId as string; // Assuming `authenticate` middleware attaches `userId`
+
+    if (!userId) {
+      res.status(401).json({
+        data: null,
+        error: { message: "Unauthorized: User ID is missing" },
+      });
+      return;
+    }
+
+    // Get the user's cart
+    const cart = await getOrCreateCart(userId);
+
+    if (!cart || cart.items.length === 0) {
+      res.status(400).json({
+        data: null,
+        error: { message: "Cart is empty or invalid for checkout" },
+      });
+      return;
+    }
+
+    // Create an order from the cart
+    const order = await createOrderFromCart(userId);
+
+    if (!order) {
+      res.status(500).json({
+        data: null,
+        error: { message: "Failed to create order during checkout" },
+      });
+      return;
+    }
+
+    await clearCart(userId);
+
+    res.status(201).json({
+      data: {
+        message: "Checkout successful",
+        order,
+      },
+      error: null,
+    });
+  } catch (error) {
+    res.status(500).json({
+      data: null,
+      error: { message: "Internal Server Error" },
     });
   }
 };

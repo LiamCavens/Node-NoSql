@@ -1,13 +1,11 @@
-import { UserEntity } from '../schemas/user.entity';
-import { v4 as uuidv4 } from 'uuid';
-import { users } from '../data/users';
+import User, { IUser } from "../schemas/user.entity";
+import { v4 as uuidv4 } from "uuid";
 
-export const getUserById = (id: string): UserEntity | undefined => {
-  return users.find((user) => user.id === id);
+export const getUserById = async (id: string): Promise<IUser | null> => {
+  return await User.findOne({ _id: id });
 };
 
-export const createUser = (id?: string): UserEntity => {
-  const newUser: UserEntity = { id: id || uuidv4() };
-  users.push(newUser);
-  return newUser;
+export const createUser = async (id?: string): Promise<IUser> => {
+  const newUser = new User({ _id: id || uuidv4() });
+  return await newUser.save();
 };

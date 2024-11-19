@@ -26,14 +26,14 @@ export const CartItemSchema = new Schema<ICartItem>({
 // };
 
 export interface ICart extends Document {
-  uuid: string;
+  _id: string;
   userId: string;
   isDeleted: boolean;
   items: ICartItem[];
 }
 
 const CartSchema = new Schema<ICart>({
-  uuid: { type: String, required: true },
+  _id: { type: String, required: true },
   userId: { type: String, required: true },
   isDeleted: { type: Boolean, required: true },
   items: { type: [CartItemSchema], required: true },

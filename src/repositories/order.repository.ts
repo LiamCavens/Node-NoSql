@@ -12,9 +12,9 @@ export const createOrder = async (
   const cart = await getOrCreateCart(userId);
 
   const newOrder = new Order({
-    uuid: uuidv4(),
+    _id: uuidv4(),
     userId,
-    cartId: cart.uuid,
+    cartId: cart._id,
     items,
     status: "created", 
     total,

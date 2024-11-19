@@ -6,7 +6,7 @@ export const getOrCreateCart = async (userId: string): Promise<ICart> => {
   let cart = await Cart.findOne({ userId, isDeleted: false });
   if (!cart) {
     cart = new Cart({
-      uuid: uuidv4(),
+      _id: uuidv4(),
       userId,
       isDeleted: false,
       items: [],
@@ -24,7 +24,7 @@ export const getCartByUserId = async (userId: string): Promise<ICart | null> => 
 // Create a new cart for a user
 export const createCart = async (userId: string): Promise<ICart> => {
   const newCart = new Cart({
-    uuid: uuidv4(),
+    _id: uuidv4(),
     userId,
     isDeleted: false,
     items: [],

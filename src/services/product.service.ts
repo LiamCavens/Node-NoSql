@@ -1,13 +1,18 @@
+import { IProduct } from "../schemas/product.entity";
+import {
+  getAllProducts as fetchAllProducts,
+  getProductById as fetchProductById,
+} from "../repositories/product.repository";
 
-
-import { IProduct } from '../schemas/product.entity';
-import { getAllProducts, getProductById } from '../repositories/product.repository';
-
-export const fetchAllProducts = (): IProduct[] => {
-  return getAllProducts();
+// Get all products
+export const getAllProducts = async (): Promise<IProduct[]> => {
+  return await fetchAllProducts();
 };
 
-export const fetchProductById = (id: string): IProduct | null => {
-  const product = getProductById(id);
-  return product || null;
+// Get a product by ID
+export const getProductById = async (
+  productId: string
+): Promise<IProduct | null> => {
+  const product = await fetchProductById(productId);
+  return product || null; // Return null if no product is found
 };

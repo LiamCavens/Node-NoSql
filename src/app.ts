@@ -1,9 +1,12 @@
+import dotenv from "dotenv";
 import express from "express";
 import connectDB from "./config/db";
 import { authenticate } from "./middleware/auth.middleware";
 import productRoutes from "./routes/productRoutes";
 import cartRoutes from "./routes/cartRoutes";
 import orderRoutes from "./routes/orderRoutes";
+
+dotenv.config();
 
 const app = express();
 

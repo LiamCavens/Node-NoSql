@@ -30,3 +30,29 @@ Simple overview to learning node with mongodb
    ```bash
    git clone https://github.com/LiamCavens/node-nosql.git
    cd node-nosql
+    ```
+2. Install the dependencies:
+    ```bash
+    npm install
+    ```
+
+3. Set up the environment variables:
+    - Create a new file `.env` in the root directory.
+    - Add these environment variables:
+      ```env
+      MONGO_URI=mongodb://localhost:27017/database-no-sql
+      MONGO_URI_TEST=mongodb://localhost:27017/database-no-sql-test
+      PORT=8000
+      ```
+
+4. Start MongoDB (locally or connect to your MongoDB Atlas instance).
+
+5. build the project:
+    ```bash
+    npm run build
+    ```
+
+6. run the project:
+    ```bash
+    npm start
+    ```

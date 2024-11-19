@@ -1,3 +1,4 @@
+import mongoose from "mongoose";
 import { ICart } from "../schemas/cart.entity";
 import {
   createCart,
@@ -18,17 +19,21 @@ export const updateCart = async (
   userId: string,
   productId: string,
   count: number
-): Promise<ICart | null> => {
+): Promise<ICart> => {
   const cart = await getOrCreateCart(userId);
-  const product = await getProductById(productId);
+
+  const productObjectId = new mongoose.Types.ObjectId(productId);
+  // Fetch the product from the database
+  const product = await getProductById(productObjectId);
 
   if (!product) {
-    // If the product is not found, return null
-    return null;
+    // If the product is not found, throw an error
+    throw new Error(`Product with ID ${productId} not found.`);
   }
 
+  // Find the index of the product in the cart
   const itemIndex = cart.items.findIndex(
-    (item) => item.product.toString() === productId
+    (item) => item.product.toString() === productObjectId.toString()
   );
 
   if (itemIndex >= 0) {
@@ -40,14 +45,12 @@ export const updateCart = async (
       cart.items[itemIndex].count = count;
     }
   } else if (count > 0) {
-    // Use `product._id` directly without constructing a new ObjectId
     cart.items.push({
-      product: product._id, // Mongoose automatically handles the correct ObjectId type
+      product: product._id,
       count,
     } as any);
   }
 
-  // Save the updated cart to the database
   return await saveCart(cart);
 };
 

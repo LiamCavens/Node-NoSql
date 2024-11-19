@@ -4,7 +4,7 @@ import { ICartItem, CartItemSchema } from "./cart.entity";
 export type ORDER_STATUS = "created" | "completed";
 
 // const order: IOrder = {
-//   uuid: 'dffd6fa8-be6b-47f6-acff-455612620ac2',
+//   _id: 'dffd6fa8-be6b-47f6-acff-455612620ac2',
 //   userId: '0fe36d16-49bc-4aab-a227-f84df899a6cb',
 //   cartId: '',
 //   items: cart.items,
@@ -13,7 +13,7 @@ export type ORDER_STATUS = "created" | "completed";
 // };
 
 export interface IOrder extends Document {
-  uuid: string;
+  _id: string;
   userId: string;
   cartId: string;
   items: ICartItem[];
@@ -22,7 +22,7 @@ export interface IOrder extends Document {
 }
 
 const OrderSchema = new Schema<IOrder>({
-  uuid: { type: String, required: true },
+  _id: { type: String, required: true },
   userId: { type: String, required: true },
   cartId: { type: String, required: true },
   items: { type: [CartItemSchema], required: true },

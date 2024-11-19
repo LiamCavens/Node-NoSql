@@ -1,3 +1,4 @@
+/// <reference path="../express.d.ts" />
 import { Request, Response, NextFunction } from "express";
 
 export const authenticate = (
@@ -6,6 +7,7 @@ export const authenticate = (
   next: NextFunction
 ): void => {
   const userId = req.header("x-user-id");
+  console.log("userId in middleware:", userId);
 
   if (!userId) {
     // If `userId` is missing, respond with a 401 status and terminate the request.
